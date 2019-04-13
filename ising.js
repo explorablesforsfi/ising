@@ -257,3 +257,89 @@ function plot_magnetization()
     m_pl.scatter('plus',m_x_plus,m_y_plus,{marker:'s',markercolor:'rgba(217,95,2,0.3)',markerradius:2});
     m_pl.scatter('minus',m_x_minus,m_y_minus,{marker:'s',markercolor:'rgba(27,158,119,0.3)',markerradius:2});
 }
+
+
+// Fourier analysis
+//
+let corr_length = [];
+let mean_corr_length = d3.range(N).map(s => 0.0);
+let fourier_measurements = 0;
+function compute_correlation_length() {
+  let h_hat = [];
+  let dims = [ sidelength, sidelength ];
+
+  // transform
+  Fourier.transform(sites, h_hat);
+
+
+  // manipulate
+  for(let i=0; i<h_hat.length;++i)
+  {
+      h_hat[i].real = Math.sqrt(Math.pow(h_hat[i].real,2) + Math.pow(h_hat[i].imag,2));
+      h_hat[i].imag = 0.0;
+  }
+
+  // invert
+  corr_length = [];
+  Fourier.invert(h_hat, corr_length);
+
+  // flip such that the circle is in the center
+  corr_length = Fourier.shift(corr_length,dims);
+  
+  //console.log(corr_length);
+  //
+  fourier_measurements += 1;
+  //console.log(mean_corr_length.length);
+  mean_corr_length = corr_length.map(function(c, i) { 
+       return mean_corr_length[i]*(fourier_measurements-1)/fourier_measurements 
+              + c/fourier_measurements;
+  });
+  
+  
+}
+
+function reset_fourier()
+{
+  mean_corr_length = sites.map(s => 0.0);
+  fourier_measurements = 0;
+  
+}
+
+var corr_canvas = d3.select('#correlation_container')
+               .append('canvas')
+               .attr('width', width)
+               .attr('height', height);
+
+var corr_ctx = corr_canvas.node().getContext('2d');
+retina(corr_canvas,corr_ctx,width,height);
+
+var corr_timer = d3.interval(function(){
+    compute_correlation_length();
+    draw_corr();
+},1000);
+
+function draw_corr() {
+    corr_ctx.save();
+
+    // delete all that was drawn
+    let bg_val = 0;
+    corr_ctx.fillStyle = "rgb("+bg_val+","+bg_val+","+bg_val+")";
+    corr_ctx.fillRect( 0, 0, width, height );
+
+
+    let corr_color = d3.scaleSequential(d3.interpolatePurples); // colorscheme
+    let scale_log = d3.scaleLog().domain([ d3.min(mean_corr_length), d3.max(mean_corr_length) ]).range([0,1]);
+
+    // draw the sites according to their clusters
+    for(let x = 0; x < sidelength; x++)
+    {
+      for(let y = 0; y < sidelength; y++)
+      {
+        corr_ctx.fillStyle = corr_color(mean_corr_length[index(x,y)]);
+        corr_ctx.fillRect( x*pixel_width, y*pixel_width, pixel_width, pixel_width );
+      }
+    }
+
+    ctx.restore();
+
+}

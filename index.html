@@ -4,6 +4,7 @@
 <script src="./libs/d3-scale-chromatic.v1.min.js"></script>
 <script src="./libs/d3-color.v1.min.js"></script>
 <script src="./libs/simple_plot.js"></script>
+<script src="./libs/Fourier.js"></script>
 <link rel="stylesheet" type="text/css" href="./css/toggle.css">
 <link rel="stylesheet" type="text/css" href="./css/slider.css">
 </head>
@@ -11,6 +12,7 @@
 
     <div id="percolation_container" style="float:left;"></div>
     <div id="magnetization_container" style="float:left;"></div>
+    <div id="correlation_container" style="float:left;"></div>
     <!--
     <div id="histogram_container"></div>
     <div id="variance_container"></div>
@@ -38,6 +40,7 @@ T_output.innerHTML = "T = " + T_slider.value/100.0;
 T_slider.oninput = function() {
   T = +this.value/100;
   T_output.innerHTML = "T = " + this.value/100.0;
+  reset_fourier()
 }
 
 /*
