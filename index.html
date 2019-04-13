@@ -1,0 +1,61 @@
+<meta charset="utf-8">
+<head>
+<script src="./libs/d3.v4.min.js"></script>
+<script src="./libs/d3-scale-chromatic.v1.min.js"></script>
+<script src="./libs/d3-color.v1.min.js"></script>
+<script src="./libs/simple_plot.js"></script>
+<link rel="stylesheet" type="text/css" href="./css/toggle.css">
+<link rel="stylesheet" type="text/css" href="./css/slider.css">
+</head>
+<body>
+
+    <div id="percolation_container" style="float:left;"></div>
+    <div id="magnetization_container" style="float:left;"></div>
+    <!--
+    <div id="histogram_container"></div>
+    <div id="variance_container"></div>
+    <button onclick="create_a_new_one()" >gimme a new one</button>
+
+    <label class="switch">
+    <input type="checkbox" onchange="toggle_color()" checked="true">
+      <span class="toggle round"></span>
+    </label>
+    <div id="rates">
+      <input type="radio" id="color_none" name="color" value="color_none"> Color none
+      <input type="radio" id="color_largest" name="color" value="color_largest"> Color largest
+      <input type="radio" id="color_all" name="color" value="color_all" checked="checked"> Color all
+    </div> -->
+    <div class="slidecontainer">
+      <input type="range" min="1" max="500" value="200" class="slider" id="T_range">
+    </div>
+    <div id="show_T"></div>
+
+<script src="ising.js"></script>
+<script>
+var T_slider = document.getElementById("T_range");
+var T_output = document.getElementById("show_T");
+T_output.innerHTML = "T = " + T_slider.value/100.0;
+T_slider.oninput = function() {
+  T = +this.value/100;
+  T_output.innerHTML = "T = " + this.value/100.0;
+}
+
+/*
+function get_color_behavior()
+{
+    return document.querySelector('input[name="color"]:checked').value;
+}
+
+var radios = document.querySelectorAll('input[type=radio][name="color"]');
+console.log(radios);
+for(let i = 0; i<radios.length; i++)
+    radios[i].onchange = draw;
+
+create_a_new_one(); */
+initialize_ising_canvas();
+start_ising();
+</script>
+
+
+</body>
+
