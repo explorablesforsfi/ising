@@ -316,7 +316,7 @@ retina(corr_canvas,corr_ctx,width,height);
 var corr_timer = d3.interval(function(){
     compute_correlation_length();
     draw_corr();
-},1000);
+},50);
 
 function draw_corr() {
     corr_ctx.save();
@@ -329,6 +329,7 @@ function draw_corr() {
 
     let corr_color = d3.scaleSequential(d3.interpolatePurples); // colorscheme
     let scale_log = d3.scaleLog().domain([ d3.min(mean_corr_length), d3.max(mean_corr_length) ]).range([0,1]);
+    //scale_log = d3.scaleLinear().domain([ d3.min(mean_corr_length), d3.max(mean_corr_length) ]).range([0,1]);
 
     // draw the sites according to their clusters
     for(let x = 0; x < sidelength; x++)
