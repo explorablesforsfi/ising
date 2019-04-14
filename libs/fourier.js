@@ -178,6 +178,7 @@ var Fourier = (function() {
     transform: FFT,
     invert: invFFT,
     shift: shiftFFT,
+    halfshift: halfShiftFFT,
     unshift: unshiftFFT,
     filter: filter
   };
