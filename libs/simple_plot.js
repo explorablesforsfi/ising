@@ -5,7 +5,8 @@ class simplePlot {
       margin: 20,
       fontsize: 12,
       xScaleType: 'lin',
-      yScaleType: 'lin'
+      yScaleType: 'lin',
+      fastScatter: false
     }
 
     Reflect.ownKeys(user_config).forEach(function(key){
@@ -29,6 +30,7 @@ class simplePlot {
     this.fsize = config.fontsize;
     this.xScaleType = config.xScaleType;
     this.yScaleType = config.yScaleType;
+    this.fastScatter = config.fastScatter;
 
     if (this.xScaleType == 'log')
       this.xScale = d3.scaleLog().range([this.margin, this.w - this.margin]);
@@ -315,16 +317,25 @@ class simplePlot {
             ctx.fillRect(_x - mr, _y - mr, md, md);
             ctx.beginPath();
             ctx.rect(_x - mr, _y - mr, md, md);
-            ctx.stroke();
+            if (!this.fastScatter)
+              ctx.stroke();
           }
           else //if (m == 'o')
           {
             ctx.beginPath();
             ctx.moveTo(_x + mr, _y);
             ctx.arc(_x, _y, mr, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
+            if (!this.fastScatter)
+            {
+              ctx.fill();
+              ctx.stroke();
+            }
           }
+        }
+        if (this.fastScatter)
+        {
+          ctx.fill();
+          ctx.stroke();
         }
       }
     }

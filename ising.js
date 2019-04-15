@@ -212,7 +212,7 @@ function init(){
     draw();
 }
 
-// ================= plot functions ===========
+// ================= plot Magnetization ===========
 //
 //
 var magnetization_canvas = d3.select('#magnetization_container')
@@ -222,7 +222,7 @@ var magnetization_canvas = d3.select('#magnetization_container')
 
 var m_ctx = magnetization_canvas.node().getContext('2d');
 retina(magnetization_canvas,m_ctx,plot_width,plot_height);
-var m_pl = new simplePlot(m_ctx,plot_width,plot_height,{margin:30,fontsize:16});
+var m_pl = new simplePlot(m_ctx,plot_width,plot_height,{margin:30,fontsize:16,fastScatter:true});
 m_pl.xlabel('temperature');
 m_pl.ylabel('magnetization');
 m_pl.xlimlabels(['0','5']);
@@ -253,13 +253,15 @@ function analyze_magnetization()
 
 function plot_magnetization()
 {
-    m_pl.scatter('systemmarker',[T],[M],{marker:'o',markercolor:'rgba(255,255,255,1.0)', markerradius:10,markeredgewidth:1,markeredgecolor:'rgba(102,102,102,1.0)'});
-    m_pl.scatter('plus',m_x_plus,m_y_plus,{marker:'s',markercolor:'rgba(217,95,2,0.3)',markerradius:2});
-    m_pl.scatter('minus',m_x_minus,m_y_minus,{marker:'s',markercolor:'rgba(27,158,119,0.3)',markerradius:2});
+    if (m_x_plus.length > 0)
+      m_pl.scatter('plus',m_x_plus,m_y_plus,{marker:'s',markercolor:'rgba(217,95,2,0.3)',markerradius:2});
+    if (m_x_minus.length > 0)
+      m_pl.scatter('minus',m_x_minus,m_y_minus,{marker:'s',markercolor:'rgba(27,158,119,0.3)',markerradius:2});
+    m_pl.scatter('systemmarker',[T],[M],{marker:'o',markercolor:'rgba(255,255,255,0.0)', markerradius:10,markeredgewidth:1,markeredgecolor:'rgba(102,102,102,1.0)'});
 }
 
 
-// Fourier analysis
+// =================== FOURIER ANALYSIS CORRELATION LENGTH =====================
 //
 let corr_length = [];
 let mean_corr_length = d3.range(N).map(s => 0.0);
@@ -297,7 +299,6 @@ function compute_correlation_length() {
     corr_length[index(sidelength-1,j)] = initial;
   }
  
-  
   //console.log(corr_length);
   //
   //fourier_measurements += 1;
@@ -306,8 +307,6 @@ function compute_correlation_length() {
   //     return mean_corr_length[i]*(fourier_measurements-1)/fourier_measurements 
   //            + c/fourier_measurements;
   //});
-  
-  
 }
 
 function reset_fourier()
