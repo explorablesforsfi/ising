@@ -5,14 +5,18 @@
 <script src="./libs/d3-color.v1.min.js"></script>
 <script src="./libs/simple_plot.js"></script>
 <script src="./libs/fourier.js"></script>
-<link rel="stylesheet" type="text/css" href="./css/toggle.css">
-<link rel="stylesheet" type="text/css" href="./css/slider.css">
+<script src="./libs/widget.v3.4.js"></script>
+<link rel="stylesheet" type="text/css" href="./css/widgets_white_bg.css">
 </head>
 <body>
 
-    <div id="percolation_container" style="float:left;"></div>
-    <div id="magnetization_container" style="float:left;"></div>
-    <div id="correlation_container" style="float:left;"></div>
+    <div id="all_container" style="">
+
+        <div id="control_container" style="margin: 5px"></div>
+        <div id="ising_container" style="float:left; border: 1px solid black; margin-right: 8px; margin-bottom:8px;"></div>
+        <div id="magnetization_container" style="float:left;"></div>
+        <div id="correlation_container" style=""></div>
+    </div>
     <!--
     <div id="histogram_container"></div>
     <div id="variance_container"></div>
@@ -26,38 +30,21 @@
       <input type="radio" id="color_none" name="color" value="color_none"> Color none
       <input type="radio" id="color_largest" name="color" value="color_largest"> Color largest
       <input type="radio" id="color_all" name="color" value="color_all" checked="checked"> Color all
-    </div> -->
+    </div> 
+    
     <div class="slidecontainer">
       <input type="range" min="1" max="500" value="200" class="slider" id="T_range">
     </div>
     <div id="show_T"></div>
+    -->
 
 <script src="ising.js"></script>
 <script>
-var T_slider = document.getElementById("T_range");
-var T_output = document.getElementById("show_T");
-T_output.innerHTML = "T = " + T_slider.value/100.0;
-T_slider.oninput = function() {
-  T = +this.value/100;
-  T_output.innerHTML = "T = " + this.value/100.0;
-  reset_fourier()
-}
 
-/*
-function get_color_behavior()
-{
-    return document.querySelector('input[name="color"]:checked').value;
-}
-
-var radios = document.querySelectorAll('input[type=radio][name="color"]');
-console.log(radios);
-for(let i = 0; i<radios.length; i++)
-    radios[i].onchange = draw;
-
-create_a_new_one(); */
-initialize_ising_canvas();
 start_ising();
+d3.selectAll("#all_container").attr("style","max-width: "+(width+plot_width+10)+"; min-width: "+ width);
 </script>
+<script src="./gui/gui.js"></script>
 
 
 </body>

@@ -6,7 +6,9 @@ class simplePlot {
       fontsize: 12,
       xScaleType: 'lin',
       yScaleType: 'lin',
-      fastScatter: false
+      fastScatter: false,
+      topMargin: 2,
+      rightMargin: 2,
     }
 
     Reflect.ownKeys(user_config).forEach(function(key){
@@ -31,19 +33,21 @@ class simplePlot {
     this.xScaleType = config.xScaleType;
     this.yScaleType = config.yScaleType;
     this.fastScatter = config.fastScatter;
+    this.tmrgn = config.topMargin;
+    this.rmrgn = config.rightMargin;
 
     if (this.xScaleType == 'log')
-      this.xScale = d3.scaleLog().range([this.margin, this.w - this.margin]);
+      this.xScale = d3.scaleLog().range([this.margin, this.w - this.rmrgn]);
     else
-      this.xScale = d3.scaleLinear().range([this.margin, this.w - this.margin]);
+      this.xScale = d3.scaleLinear().range([this.margin, this.w - this.rmrgn]);
 
     if (this.yScaleType == 'log')
-      this.yScale = d3.scaleLog().range([this.h - this.margin, this.margin]);
+      this.yScale = d3.scaleLog().range([this.h - this.margin, this.tmrgn]);
     else
-      this.yScale = d3.scaleLinear().range([this.h - this.margin, this.margin]);
+      this.yScale = d3.scaleLinear().range([this.h - this.margin, this.tmrgn]);
   }
 
-  scatter(label, x, y, user_config={})
+  scatter(label, x, y, user_config={}, redraw=true)
   {
     let config = {
       marker: 'o', 
@@ -89,7 +93,8 @@ class simplePlot {
       this.ylim([d3.min(y), d3.max(y)]);
     }
 
-    this.draw();
+    if (redraw)
+      this.draw();
   }
 
   step(label, x, y, user_config={})
@@ -98,7 +103,7 @@ class simplePlot {
     this.plot(label, x, y, user_config);
   }
 
-  plot(label, x, y, user_config={})
+  plot(label, x, y, user_config={}, redraw=true)
   {
     let config = {
       linedash: [], 
@@ -141,7 +146,8 @@ class simplePlot {
       this.ylim([d3.min(y), d3.max(y)]);
     }
 
-    this.draw();
+    if (redraw)
+      this.draw();
   }
 
   changePlotAttr(label, linedash = null, linecolor = null, linewidth = null, is_step = null) {
@@ -157,20 +163,22 @@ class simplePlot {
     this.draw();
   }
 
-  xlim(rX) {
+  xlim(rX,redraw=true) {
     if (!arguments.length) return this.range_x;
 
     this.range_x = rX;
     this.xScale.domain(rX);
-    this.draw();
+    if (redraw)
+      this.draw();
   }
 
-  ylim(rY) {
+  ylim(rY,redraw=true) {
     if (!arguments.length) return this.range_y;
 
     this.range_y = rY;
     this.yScale.domain(rY);
-    this.draw();
+    if (redraw)
+      this.draw();
   }
 
   xlabel(xl) {
@@ -190,9 +198,9 @@ class simplePlot {
     this.xScaleType = scaletype;
 
     if (this.xScaleType == 'log')
-      this.xScale = d3.scaleLog().range([this.margin, this.w - this.margin]);
+      this.xScale = d3.scaleLog().range([this.margin, this.w - this.rmrgn]);
     else
-      this.xScale = d3.scaleLinear().range([this.margin, this.w - this.margin]);
+      this.xScale = d3.scaleLinear().range([this.margin, this.w - this.rmrgn]);
 
     if (!(this.range_x === null))
       this.xScale.domain(this.range_x);
@@ -204,9 +212,9 @@ class simplePlot {
     this.yScaleType = scaletype;
 
     if (this.yScaleType == 'log')
-      this.yScale = d3.scaleLog().range([this.h - this.margin, this.margin]);
+      this.yScale = d3.scaleLog().range([this.h - this.margin, this.tmrgn]);
     else
-      this.yScale = d3.scaleLinear().range([this.h - this.margin, this.margin]);
+      this.yScale = d3.scaleLinear().range([this.h - this.margin, this.tmrgn]);
 
     if (!(this.range_y === null))
       this.yScale.domain(this.range_y);
@@ -245,13 +253,16 @@ class simplePlot {
     let xS = this.xScale;
     let yS = this.yScale;
     let mrgn = this.margin;
+    let rmrgn = this.rmrgn;
+    let tmrgn = this.tmrgn;
+
     let w = this.w;
     let h = this.h;
 
     ctx.clearRect(0, 0, this.w, this.h);
     ctx.save()
     ctx.lineWidth = 0;
-    ctx.rect(mrgn, mrgn, this.w - 2 * mrgn, this.h - 2 * mrgn);
+    ctx.rect(mrgn, tmrgn, this.w - (mrgn+rmrgn), this.h - (mrgn+tmrgn));
     ctx.stroke();
     ctx.clip();
 
@@ -334,7 +345,8 @@ class simplePlot {
         }
         if (this.fastScatter)
         {
-          ctx.fill();
+          if (m != 's')
+            ctx.fill();
           ctx.stroke();
         }
       }
@@ -346,7 +358,7 @@ class simplePlot {
     ctx.setLineDash([]);
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.rect(mrgn, mrgn, this.w - 2 * mrgn, this.h - 2 * mrgn);
+    ctx.rect(mrgn, tmrgn, this.w - (mrgn+rmrgn), this.h - (mrgn+tmrgn));
     ctx.stroke();
 
     let fsize = this.fsize;
@@ -358,12 +370,12 @@ class simplePlot {
 
 
     if (this.x_label !== null) {
-      ctx.fillText(this.x_label, w / 2, h - fH / 3);
+      ctx.fillText(this.x_label, (w-rmrgn-mrgn) / 2+mrgn, h - fH / 3);
     }
 
     if (this.y_label !== null) {
       ctx.save();
-      ctx.translate(1.2 * mrgn - fH, h / 2);
+      ctx.translate(1.2 * mrgn - fH, (h-tmrgn-mrgn) / 2 + tmrgn);
       ctx.rotate(-Math.PI / 2);
       ctx.fillText(this.y_label, 0, 0);
       ctx.restore();
@@ -386,9 +398,8 @@ class simplePlot {
       ctx.textAlign = 'left';
       ctx.fillText(xmin, mrgn, (h - mrgn) + fsize);
       ctx.textAlign = 'right';
-      ctx.fillText(xmax, w - mrgn, (h - mrgn) + fsize);
+      ctx.fillText(xmax, w - rmrgn, (h - mrgn) + fsize);
     }
-
     if (this.range_y !== null) {
       let ymin,
         ymax;
@@ -405,7 +416,7 @@ class simplePlot {
       ctx.textAlign = 'right';
       ctx.fillText(ymin, mrgn - 0.3 * fsize, (h - mrgn));
       ctx.textAlign = 'right';
-      ctx.fillText(ymax, mrgn - 0.3 * fsize, mrgn + fsize);
+      ctx.fillText(ymax, mrgn - 0.3 * fsize, tmrgn + fsize);
     }
 
     if (this.draw_legend) {

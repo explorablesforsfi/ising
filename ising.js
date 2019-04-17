@@ -53,6 +53,8 @@ var use_growing_occupation = true;
 var sites = [];               // one-dimensional array containing all sites (1 if occupied, 0 if not)
 let pixel_width = 3;          // width of one site in pixels 
 let flipped_spins = {};
+let use_2d_fourier = false;
+var local_field = "none";
 
  
 let T = 2.0,               // occupation probability 
@@ -61,11 +63,13 @@ let T = 2.0,               // occupation probability
 let N = sidelength*sidelength; // total number of sites
 let n_clusters = 0;            // current number of clusters
 let color = d3.scaleOrdinal(d3.schemeDark2); // colorscheme
+let colors = d3.range(8).map(tmp => color(tmp));
+colors[1] = d3.color(colors[1]).brighter().brighter().hex();
 
 var width = sidelength*pixel_width,   // canvas width
     height = sidelength*pixel_width;  // canvas height
-var plot_width = 250, plot_height=250;
-var canvas = d3.select('#percolation_container')
+var plot_width = width/2, plot_height=width/2;
+var canvas = d3.select('#ising_container')
                .append('canvas')
                .attr('width', width)
                .attr('height', height);
@@ -77,19 +81,29 @@ retina(canvas,ctx,width,height);
 
 // ============== ising functions ===============
 
+/*
 function initialize_ising_canvas() {
-    // get the first two colors in order to fix them
-    let a = color(0);
-    let b = color(1);
     canvas
         //.call(d3.drag().subject(dragsubject).on("drag", dragged))
         .call(d3.zoom().scaleExtent([1, 8]).on("zoom", zoomed))
         .call(draw);
 }
+*/
+let mouseX = -1,
+    mouseY = -1;
+
+canvas.on('mouseout', function () {
+          mouseX = -1;
+          mouseY = -1;
+      })
+      .on('mousemove', function () {
+          mouseX = d3.event.layerX || d3.event.offsetX;
+          mouseY = d3.event.layerY || d3.event.offsetY;
+      })
 
 function zoomed() {
-  transform = d3.event.transform;
-  draw();
+transform = d3.event.transform;
+draw();
 }
 
 var maintimer;
@@ -102,7 +116,7 @@ function start_ising() {
     draw_updated();
     //maintimer.stop();
   });
-  plottime = d3.interval(function(elapsed) {
+  plottimer = d3.interval(function(elapsed) {
     analyze_magnetization();
     plot_magnetization();
   },100);
@@ -111,7 +125,22 @@ function start_ising() {
 function stop_ising()
 {
   maintimer.stop();
-  plotttimer.stop();
+  plottimer.stop();
+}
+
+function reset()
+{
+  //stop_ising();
+  T = 2;
+  m_x_minus.length = 0;
+  m_y_minus.length = 0;
+  m_x_plus.length = 0;
+  m_y_plus.length = 0;
+  reset_fourier();
+  init();
+  analyze_magnetization();
+  plot_magnetization();
+  //start_ising();
 }
 
 function update() {
@@ -141,6 +170,41 @@ function update() {
       flipped_spins[I] = { x:x, y:y, s: -s_xy}
     }
   }
+  if ((local_field != "none") && (mouseX>-1))
+  {
+    let x = Math.floor(mouseX/pixel_width),
+        y = Math.floor(mouseY/pixel_width);
+    let spin;
+    if (local_field == "positive")
+      spin = +1;
+    if (local_field == "negative")
+      spin = -1;
+
+    let radius = 5;
+
+
+    for (let _x = x - radius; _x <= x+radius; ++_x)
+      for (let _y = y - radius; _y <= y+radius; ++_y)
+      {
+        if (Math.sqrt(Math.pow(_x - x,2)+Math.pow(_y - y,2))<radius)
+        {  
+          let __x = _x, 
+              __y = _y;
+          if (_x < 0)
+            __x += sidelength;
+          if (_x > sidelength)
+            __x -= sidelength;
+          if (_y < 0)
+            __y += sidelength;
+          if (_y > sidelength)
+            __y -= sidelength;
+          let I = index(__x,__y);
+          sites[I] = spin;
+          flipped_spins[I] = { x:__x, y:__y, s: spin}
+        }
+      }
+
+  }
 
 }
 function draw() {
@@ -158,7 +222,7 @@ function draw() {
     {
       for(let y = 0; y < sidelength; y++)
       {
-        ctx.fillStyle = color((sites[index(x,y)]+1)/2);
+        ctx.fillStyle = colors[(sites[index(x,y)]+1)/2];
         ctx.fillRect( x*pixel_width, y*pixel_width, pixel_width, pixel_width );
       }
     }
@@ -175,7 +239,7 @@ function draw_updated() {
 
     Reflect.ownKeys(flipped_spins).forEach(function (key) {
       let site = flipped_spins[key];
-      ctx.fillStyle = color((site.s+1)/2);
+      ctx.fillStyle = colors[(site.s+1)/2];
       ctx.fillRect( site.x*pixel_width, site.y*pixel_width, pixel_width, pixel_width );
     });
 
@@ -197,7 +261,7 @@ function coords(i){
 
 function init(){
     sites.length = 0;
-    let p = 0.8;
+    let p = 0.9;
 
     for(let i=0; i<sidelength; i++)
     {
@@ -222,12 +286,12 @@ var magnetization_canvas = d3.select('#magnetization_container')
 
 var m_ctx = magnetization_canvas.node().getContext('2d');
 retina(magnetization_canvas,m_ctx,plot_width,plot_height);
-var m_pl = new simplePlot(m_ctx,plot_width,plot_height,{margin:30,fontsize:16,fastScatter:true});
+var m_pl = new simplePlot(m_ctx,plot_width,plot_height,{margin:30,fontsize:14,fastScatter:true});
 m_pl.xlabel('temperature');
 m_pl.ylabel('magnetization');
-m_pl.xlimlabels(['0','5']);
+m_pl.xlimlabels(['1','5']);
 m_pl.ylimlabels(['-1','+1']);
-m_pl.xlim([0,5]);
+m_pl.xlim([1,5]);
 m_pl.ylim([-1,1]);
 var m_x_plus = [];
 var m_y_plus = [];
@@ -253,20 +317,33 @@ function analyze_magnetization()
 
 function plot_magnetization()
 {
+  let plus_color = d3.color(colors[1]);
+  plus_color.opacity = 0.3;
+  plus_color = plus_color.toString();
+  let minus_color = d3.color(colors[0]);
+  minus_color.opacity = 0.3;
+  minus_color = minus_color.toString();
+
     if (m_x_plus.length > 0)
-      m_pl.scatter('plus',m_x_plus,m_y_plus,{marker:'s',markercolor:'rgba(217,95,2,0.3)',markerradius:2});
+      m_pl.scatter('plus',m_x_plus,m_y_plus,{marker:'s',markercolor:plus_color,markerradius:2},false);
     if (m_x_minus.length > 0)
-      m_pl.scatter('minus',m_x_minus,m_y_minus,{marker:'s',markercolor:'rgba(27,158,119,0.3)',markerradius:2});
-    m_pl.scatter('systemmarker',[T],[M],{marker:'o',markercolor:'rgba(255,255,255,0.0)', markerradius:10,markeredgewidth:1,markeredgecolor:'rgba(102,102,102,1.0)'});
+      m_pl.scatter('minus',m_x_minus,m_y_minus,{marker:'s',markercolor:minus_color,markerradius:2},false);
+    m_pl.scatter('systemmarker',[T],[M],{marker:'o',markercolor:'rgba(255,255,255,0.0)', markerradius:10,markeredgewidth:1,markeredgecolor:'rgba(102,102,102,1.0)'},false);
+    m_pl.plot('zero',[1,5],[0,0])
 }
 
 
-// =================== FOURIER ANALYSIS CORRELATION LENGTH =====================
+// =================== FOURIER ANALYSIS 2D CORRELATION LENGTH =====================
 //
 let corr_length = [];
 let mean_corr_length = d3.range(N).map(s => 0.0);
 let fourier_measurements = 0;
+let last_corr_lengths = [];
+let max_measurements = 20;
+
 function compute_correlation_length() {
+  if (!use_2d_fourier)
+    return;
   let h_hat = [];
   let dims = [ sidelength, sidelength ];
 
@@ -308,27 +385,139 @@ function compute_correlation_length() {
   //            + c/fourier_measurements;
   //});
 }
+function compute_correlation_length_1d() {
+
+  let h_hat = [];
+  let dims = [ sidelength, sidelength ];
+  let mean_sites = d3.range(sidelength).map(tmp=>0);
+  for (var row=0; row<sidelength; row++)
+  {
+    for (var col=0; col<sidelength; col++)
+      mean_sites[row] += sites[index(row,col)]/sidelength;
+  }
+
+  // transform
+  Fourier.transform(mean_sites, h_hat);
+
+  // manipulate
+  for(let i=0; i<h_hat.length;++i)
+  {
+      h_hat[i].real = Math.pow(h_hat[i].real,2) + Math.pow(h_hat[i].imag,2);
+      h_hat[i].imag = 0.0;
+  }
+
+  // invert
+  corr_length = [];
+  Fourier.invert(h_hat, corr_length);
+
+  // flip such that the circle is in the center
+  //corr_length = Fourier.halfshift(Fourier.halfshift(corr_length,dims),dims);
+  //corr_length = x_corr_length.map(c => c);
+  //let tmp = [];
+  //for(var i=sidelength/2; i<sidelength; ++i)
+  //  tmp.push(corr_length[i]);
+  //for(var i=0; i<sidelength/2; ++i)
+  //  tmp.push(corr_length[i]);
+  //corr_length = tmp;
+  corr_length = corr_length.slice(0,sidelength/2);
+  last_corr_lengths.push(corr_length);
+  if (last_corr_lengths.length > max_measurements)
+    last_corr_lengths = last_corr_lengths.slice(1,last_corr_lengths.length);
+
+}
+ 
+  //console.log(corr_length);
 
 function reset_fourier()
 {
-  mean_corr_length = sites.map(s => 0.0);
-  fourier_measurements = 0;
+  if (use_2d_fourier)
+  {
+    mean_corr_length = sites.map(s => 0.0);
+    fourier_measurements = 0;
+  }
+  else
+  {
+    last_corr_lengths.length = 0;
+  }
 }
 
-var corr_canvas = d3.select('#correlation_container')
-                    .append('canvas')
-                    .attr('width', width)
-                    .attr('height', height);
+var corr_timer;
 
-var corr_ctx = corr_canvas.node().getContext('2d');
-retina(corr_canvas,corr_ctx,width,height);
+function start_fourier()
+{
+  if (use_2d_fourier)
+  {
+    corr_timer = d3.interval(function(){
+        compute_correlation_length();
+        draw_corr();
+    },250);
+  }
+  else
+  {
+    corr_timer = d3.interval(function(){
+        compute_correlation_length_1d();
+        draw_corr_1d();
+    },100);
+  }
+}
 
-var corr_timer = d3.interval(function(){
-    compute_correlation_length();
-    draw_corr();
-},250);
+function stop_fourier()
+{
+  corr_timer.stop();
+}
+
+if (use_2d_fourier)
+{
+  var corr_canvas = d3.select('#correlation_container')
+                      .append('canvas')
+                      .attr('width', width)
+                      .attr('height', height);
+
+  var corr_ctx = corr_canvas.node().getContext('2d');
+  retina(corr_canvas,corr_ctx,width,height);
+
+  start_fourier();
+}
+else
+{
+  var corr_canvas = d3.select('#correlation_container')
+                      .append('canvas')
+                      .attr('width', plot_width)
+                      .attr('height', plot_height)
+  ;
+
+  var corr_ctx = corr_canvas.node().getContext('2d');
+  retina(corr_canvas,corr_ctx,plot_width,plot_height);
+
+  var corr_pl = new simplePlot(corr_ctx,plot_width,plot_height,{margin:30,fontsize:14});
+  //corr_pl.xscale("log");
+  //corr_pl.yscale("log");
+  corr_pl.ylimlabels(['','']);
+  corr_pl.xlabel('distance to neighbor');
+  corr_pl.ylabel('correlation');
+  corr_pl.xlimlabels(['0','L/2'])
+  start_fourier();
+
+}
+
+function draw_corr_1d() {
+
+  let y = corr_length.map(tmp => 0);
+  for (var row=0; row<last_corr_lengths.length; row++)
+  {
+    for (var col=0; col<sidelength; col++)
+      y[col] += last_corr_lengths[row][col]/last_corr_lengths.length;
+  }
+  let x = d3.range(sidelength/2);
+  corr_pl.ylim(d3.extent(y),false);
+  corr_pl.plot('corr',x,y,{linewidth:3,linecolor:'#888'});
+
+}
 
 function draw_corr() {
+    if (!use_2d_fourier)
+      return;
+
     corr_ctx.save();
 
     // delete all that was drawn
