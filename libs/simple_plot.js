@@ -320,20 +320,29 @@ class simplePlot {
         ctx.strokeStyle = mec;
         ctx.fillStyle = mc;
 
+        if (this.fastScatter)
+            ctx.beginPath();
         for (var i = 0; i < x.length; ++i) {
           let _x = xS(x[i]);
           let _y = yS(y[i]);
 
-          if (m == 's') {
-            ctx.fillRect(_x - mr, _y - mr, md, md);
-            ctx.beginPath();
+          if (m == 's') 
+          {
+            if (!this.fastScatter)
+              ctx.beginPath();
+
             ctx.rect(_x - mr, _y - mr, md, md);
             if (!this.fastScatter)
+            {
+              ctx.fill();
               ctx.stroke();
+            }
           }
           else //if (m == 'o')
           {
-            ctx.beginPath();
+            if (!this.fastScatter)
+              ctx.beginPath();
+
             ctx.moveTo(_x + mr, _y);
             ctx.arc(_x, _y, mr, 0, 2 * Math.PI);
             if (!this.fastScatter)
@@ -345,8 +354,7 @@ class simplePlot {
         }
         if (this.fastScatter)
         {
-          if (m != 's')
-            ctx.fill();
+          ctx.fill();
           ctx.stroke();
         }
       }

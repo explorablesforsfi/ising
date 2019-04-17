@@ -188,19 +188,10 @@ function update() {
       {
         if (Math.sqrt(Math.pow(_x - x,2)+Math.pow(_y - y,2))<radius)
         {  
-          let __x = _x, 
-              __y = _y;
-          if (_x < 0)
-            __x += sidelength;
-          if (_x > sidelength)
-            __x -= sidelength;
-          if (_y < 0)
-            __y += sidelength;
-          if (_y > sidelength)
-            __y -= sidelength;
-          let I = index(__x,__y);
+          let I = index(_x,_y);
+          let pos = coords(I);
           sites[I] = spin;
-          flipped_spins[I] = { x:__x, y:__y, s: spin}
+          flipped_spins[I] = { x:pos[0], y:pos[1], s: spin}
         }
       }
 
@@ -261,7 +252,7 @@ function coords(i){
 
 function init(){
     sites.length = 0;
-    let p = 0.9;
+    let p = 0.95;
 
     for(let i=0; i<sidelength; i++)
     {
@@ -317,12 +308,14 @@ function analyze_magnetization()
 
 function plot_magnetization()
 {
-  let plus_color = d3.color(colors[1]);
-  plus_color.opacity = 0.3;
-  plus_color = plus_color.toString();
-  let minus_color = d3.color(colors[0]);
-  minus_color.opacity = 0.3;
-  minus_color = minus_color.toString();
+  let plus_color = colors[1];
+  //let plus_color = d3.color(colors[1]);
+  //plus_color.opacity = 0.3;
+  //plus_color = plus_color.toString();
+  let minus_color = colors[0];
+  //let minus_color = d3.color(colors[0]);
+  //minus_color.opacity = 0.3;
+  //minus_color = minus_color.toString();
 
     if (m_x_plus.length > 0)
       m_pl.scatter('plus',m_x_plus,m_y_plus,{marker:'s',markercolor:plus_color,markerradius:2},false);
