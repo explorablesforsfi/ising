@@ -17,6 +17,8 @@ Then change to the created directory and start a local webserver
     
 Go to your browser and navigate to http://localhost:1313 .
 
+![ising model](https://github.com/explorablesforsf/ising/raw/master/img/example.png)
+
 ## License
 
 All original code in this repository, i.e. all code which is not in the subdirectory `/libs/` is licensed under the CC 4.0 licence. The subdirectory `/libs/` contains external libraries which are licensed as follows
@@ -29,3 +31,4 @@ All original code in this repository, i.e. all code which is not in the subdirec
 | `d3.v4.min.js`                 | BSD 3-Clause "New" or "Revised" License | [d3](https://github.com/d3/d3)|
 | `fourier.js`                   | MIT                                     | [JS-Fourier-Image-Analysis](https://github.com/turbomaze/JS-Fourier-Image-Analysis)|
 | `simple_plot.js`               | CC 4.0                                  | [simple-plot](https://github.com/benmaier/simple-plot)|
+| `widget.v3.4.js`               | permission to use given by D. Brockmann | [complexity explorables](http://www.complexity-explorables.org) |
