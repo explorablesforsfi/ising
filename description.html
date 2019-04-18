@@ -1,0 +1,25 @@
+<h2>The Ising Model</h2>
+
+<p>In 19XX, physicist Ernst Ising developed a simple model to observe macroscopic magnetization effects in spin lattices depending on the temperature T of the system. The explorable presentend here lets you investigate a system similar to the one defined by him on your own. A myriad of texts, articles, and books have been written about this model and its implications, so we will leave the details for you to learn elsewhere (e.g. here, here, and here) and just briefly explain what you can do with the model in the following.</p>
+
+<p style="text-align:center"><iframe align="top" frameborder="0" height="600" scrolling="yes" src="https://s3.amazonaws.com/complexityexplorer/Explorables/ising/index.html" width="800"></iframe></p>
+
+<p>&nbsp;</p>
+
+<h2>The Model</h2>
+
+<p>In the Ising model, a lattice site represents a small particle of fixed location whose &quot;spin&quot; can either point up (+1, here represented by yellow/orange) or down (-1, turquoise). When more spins are aligned in one direction compared to the other, we find the system in a situation where a magnetic field is measurable by an outside observer. In this case we say that the system is in a magnetized phase. In the real world, this would for instance correspond to a ferromagnet. We can quantify the magnetization of the whole system by computing the mean magnetization per lattice site, (i.e. the sum over all lattice sites divided by the total number of lattice sites). This is shown in the magnetization-temperature plot.</p>
+
+<p>The system, however, is not static but dynamically evolving. A lattice site can spontaneously flip its state based on a simple physical property: The potential energy between two spins is larger when they are not aligned. Hence, a lattice site is driven to flip its state if this flip would minimize the potential energy in the system (compared to its four neighbors).</p>
+
+<p>Furthermore, the system underlies the influence of the temperature of its surroundings, which is the cause of random fluctuations: The larger the temperature the greater the probability that a lattice site flips its state even though this would increase the system&#39;s total energy. It turns out that there&#39;s a <em>critical temperature</em> after which no magnetization is possible. Physicists therefore speak of a <em>phase transition</em> which happens at this temperature: For temperatures lower than the critical temperature, the system will eventually be in a phase of high magnetization whereas for high values the magnetization is zero.</p>
+
+<h2>The Explorable</h2>
+
+<p>In the explorable, try slowly varying the temperature and observe what happens to the magnetization in the corresponding temperature-magnetization plot. The current state of the system is marked by a large circle. Can you find a possible value for the critical temperature?</p>
+
+<p>One way to find the critical temperature is to investigate the radial correlation function of lattice sites. In the corresponding distance-correlation to neighbor plot you can see how correlated the spin of an arbitrary lattice site is to another lattice site at a certain distance. In both the magnetized as well as the non-magnetized equilibrium, the correlation function is peaked around zero distance and exponentially decays with increasing distance. This implies that fluctuations are only local. However, at the critical point, fluctuating patches of vaying size form and as such the correlation function drastically broadens (in the infinite-size limit and averaged over time, we would indeed find a power-law).</p>
+
+<p>Note that here, the correlation function is subject to noise and finite-size effects. To smooth these out, we show the average over the last 2 seconds (which is reset every time you vary the temperature.)</p>
+
+<p>You may also observe that for small values of the temperature, large stripes of different magnetization can form (try this yourself!). This is a finite-size effect as well. To resolve this, one can manipulate the magnetization locally by applying a strong magnetic field around the cursor by selecting either the &#39;postive local field at cursor&#39; or the &#39;negative local field at cursor&#39; radio buttons.</p>
