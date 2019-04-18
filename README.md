@@ -17,7 +17,7 @@ Then change to the created directory and start a local webserver
     
 Go to your browser and navigate to http://localhost:1313 .
 
-![ising model](https://github.com/explorablesforsf/ising/raw/master/img/example.png)
+![ising model](https://github.com/explorablesforsfi/ising/raw/master/img/example.png)
 
 ## License
 
