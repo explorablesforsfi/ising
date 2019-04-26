@@ -329,14 +329,13 @@ function plot_magnetization()
 // =================== FOURIER ANALYSIS 2D CORRELATION LENGTH =====================
 //
 let corr_length = [];
+let corr_length_2d = [];
 let mean_corr_length = d3.range(N).map(s => 0.0);
 let fourier_measurements = 0;
 let last_corr_lengths = [];
 let max_measurements = 20;
 
 function compute_correlation_length() {
-  if (!use_2d_fourier)
-    return;
   let h_hat = [];
   let dims = [ sidelength, sidelength ];
 
@@ -352,22 +351,22 @@ function compute_correlation_length() {
   }
 
   // invert
-  corr_length = [];
-  Fourier.invert(h_hat, corr_length);
+  corr_length_2d = [];
+  Fourier.invert(h_hat, corr_length_2d);
+  /*
 
-  // flip such that the circle is in the center
-  corr_length = Fourier.halfshift(Fourier.halfshift(corr_length,dims),dims);
   //corr_length = x_corr_length.map(c => c);
   for(let j=0; j<sidelength/2; ++j)
   {
-      let initial = corr_length[index(0,j)];
+      let initial = corr_length_2d[index(0,j)];
     for(let i=sidelength-1; i>=0; --i)
     {
         //corr_length[index(i,j)] = x_corr_length[index(i,j)];
-        corr_length[index(i+1,j)] = corr_length[index(i,j)];      
+        corr_length_2d[index(i+1,j)] = corr_length_2d[index(i,j)];      
     }
-    corr_length[index(sidelength-1,j)] = initial;
+    corr_length_2d[index(sidelength-1,j)] = initial;
   }
+  */
  
   //console.log(corr_length);
   //
@@ -380,28 +379,12 @@ function compute_correlation_length() {
 }
 function compute_correlation_length_1d() {
 
-  let h_hat = [];
-  let dims = [ sidelength, sidelength ];
-  let mean_sites = d3.range(sidelength).map(tmp=>0);
+  corr_length = d3.range(sidelength).map(tmp=>0);
   for (var row=0; row<sidelength; row++)
   {
     for (var col=0; col<sidelength; col++)
-      mean_sites[row] += sites[index(row,col)]/sidelength;
+      corr_length[row] += corr_length_2d[index(row,col)]/sidelength;
   }
-
-  // transform
-  Fourier.transform(mean_sites, h_hat);
-
-  // manipulate
-  for(let i=0; i<h_hat.length;++i)
-  {
-      h_hat[i].real = Math.pow(h_hat[i].real,2) + Math.pow(h_hat[i].imag,2);
-      h_hat[i].imag = 0.0;
-  }
-
-  // invert
-  corr_length = [];
-  Fourier.invert(h_hat, corr_length);
 
   // flip such that the circle is in the center
   //corr_length = Fourier.halfshift(Fourier.halfshift(corr_length,dims),dims);
@@ -412,6 +395,7 @@ function compute_correlation_length_1d() {
   //for(var i=0; i<sidelength/2; ++i)
   //  tmp.push(corr_length[i]);
   //corr_length = tmp;
+  
   corr_length = corr_length.slice(0,sidelength/2);
   last_corr_lengths.push(corr_length);
   if (last_corr_lengths.length > max_measurements)
@@ -441,15 +425,15 @@ function start_fourier()
   if (use_2d_fourier)
   {
     corr_timer = d3.interval(function(){
-        compute_correlation_length();
-        draw_corr();
     },250);
   }
   else
   {
     corr_timer = d3.interval(function(){
+        compute_correlation_length();
         compute_correlation_length_1d();
         draw_corr_1d();
+        //corr_timer.stop();
     },100);
   }
 }
@@ -507,32 +491,3 @@ function draw_corr_1d() {
 
 }
 
-function draw_corr() {
-    if (!use_2d_fourier)
-      return;
-
-    corr_ctx.save();
-
-    // delete all that was drawn
-    let bg_val = 0;
-    corr_ctx.fillStyle = "rgb("+bg_val+","+bg_val+","+bg_val+")";
-    corr_ctx.fillRect( 0, 0, width, height );
-
-
-    let corr_color = d3.scaleSequential(d3.interpolatePurples); // colorscheme
-    //let color_scale = d3.scaleLog().domain([ d3.min(corr_length), d3.max(corr_length) ]).range([0,1]);
-    let color_scale = d3.scaleLinear().domain([ d3.min(corr_length), d3.max(corr_length) ]).range([0,1]);
-
-    // draw the sites according to their clusters
-    for(let x = 0; x < sidelength; x++)
-    {
-      for(let y = 0; y < sidelength; y++)
-      {
-        corr_ctx.fillStyle = corr_color(color_scale(corr_length[index(x,y)]));
-        corr_ctx.fillRect( x*pixel_width, y*pixel_width, pixel_width, pixel_width );
-      }
-    }
-
-    ctx.restore();
-
-}
